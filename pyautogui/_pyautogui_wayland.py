@@ -31,6 +31,7 @@ def _get_wayland_click_time():
 SCALING = 1
 SIZE = None
 _display = None
+_button_down = None
 ISGNOME = os.getenv("XDG_CURRENT_DESKTOP") == "ubuntu:GNOME"
 ISTREELAND = "treeland" in os.getenv("XDG_CURRENT_DESKTOP", "").lower() or "treeland" in os.getenv("WAYLAND_DISPLAY", "").lower()
 if ISGNOME:
@@ -86,6 +87,14 @@ def _size():
 
 
 def _moveTo(x, y):
+    if _button_down:
+        cur_x, cur_y = _position()
+        dx = (x - cur_x) / SCALING
+        dy = (y - cur_y) / SCALING
+        subprocess.run(["ydotool", "mousemove", "-x", str(dx), "-y", str(dy)])
+        time.sleep(pyautogui.WAYLAND_MOVE_TIME)
+        return
+
     new_x = ((x)/(SCALING))
     new_y = ((y)/(SCALING))
     if _display:
@@ -163,6 +172,7 @@ def _mouse_is_swapped():
 
 
 def _mouseDown(x, y, button):
+    global _button_down
     assert button in (
         LEFT,
         MIDDLE,
@@ -176,9 +186,11 @@ def _mouseDown(x, y, button):
         __click(ClickEnum.MIDDLE | ClickEnum.MOUSE_DOWN)
     if button == RIGHT:
         __click(ClickEnum.RIGHT | ClickEnum.MOUSE_DOWN)
+    _button_down = button
 
 
 def _mouseUp(x, y, button):
+    global _button_down
     assert button in (
         LEFT,
         MIDDLE,
@@ -192,6 +204,7 @@ def _mouseUp(x, y, button):
         __click(ClickEnum.MIDDLE | ClickEnum.MOUSE_UP)
     if button == RIGHT:
         __click(ClickEnum.RIGHT | ClickEnum.MOUSE_UP)
+    _button_down = None
 
 
 """ Information for keyboardMapping derived from PyKeyboard's special_key_assignment() function.
