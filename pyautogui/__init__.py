@@ -2220,5 +2220,13 @@ def getInfo():
 
 
 # Add the bottom left, top right, and bottom right corners to FAILSAFE_POINTS.
-_right, _bottom = size()
-FAILSAFE_POINTS.extend([(0, _bottom - 1), (_right - 1, 0), (_right - 1, _bottom - 1)])
+# The probe can block instead of raising (Treeland has no screenshot portal, and
+# none exists before login), so it must not run at import time there; the
+# corners are optional.
+if not getattr(platformModule, "ISTREELAND", False):
+    try:
+        _right, _bottom = size()
+    except Exception:
+        pass
+    else:
+        FAILSAFE_POINTS.extend([(0, _bottom - 1), (_right - 1, 0), (_right - 1, _bottom - 1)])
